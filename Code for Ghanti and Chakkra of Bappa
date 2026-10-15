@@ -1,0 +1,72 @@
+
+# AUTOMATED GHANTI AND CHAKKRA
+# Raspberry Pi Pico 2W - MicroPython
+# GP15 = Ghanti servo
+# GP10 = Continuous rotation chakkra servo
+
+from machine import Pin, PWM
+from time import sleep
+
+# -------------------------------
+# GHANTI SERVO - GP15
+# -------------------------------
+ghanti = PWM(Pin(15))
+ghanti.freq(50)
+
+def ghanti_us(us):
+    duty = int(us * 65535 / 20000)
+    ghanti.duty_u16(duty)
+
+# Adjust these values according to your mechanism
+GHANTI_REST = 1500
+GHANTI_HIT = 2200
+
+# -------------------------------
+# CHAKKRA SERVO - GP10
+# -------------------------------
+chakkra = PWM(Pin(10))
+chakkra.freq(50)
+
+def chakkra_us(us):
+    duty = int(us * 65535 / 20000)
+    chakkra.duty_u16(duty)
+
+# For a continuous-rotation servo:
+# Around 1500 us = stop
+# Above or below 1500 us = rotation
+# Direction depends on the servo model.
+CHAKKRA_ANTICLOCKWISE = 1300
+
+# -------------------------------
+# INITIALIZE
+# -------------------------------
+ghanti_us(GHANTI_REST)
+chakkra_us(1500)
+sleep(2)
+
+# Start continuous chakkra rotation
+chakkra_us(CHAKKRA_ANTICLOCKWISE)
+
+# -------------------------------
+# REPEATED "TONG-TONG"
+# -------------------------------
+try:
+    while True:
+        # First bell hit
+        ghanti_us(GHANTI_HIT)
+        sleep(0.25)
+        ghanti_us(GHANTI_REST)
+        sleep(0.5)
+
+        # Second bell hit
+        ghanti_us(GHANTI_HIT)
+        sleep(0.25)
+        ghanti_us(GHANTI_REST)
+        sleep(1.0)
+
+except KeyboardInterrupt:
+    # Stop both servos when Ctrl+C is pressed
+    ghanti_us(GHANTI_REST)
+    chakkra_us(1500)
+    ghanti.deinit()
+    chakkra.deinit()
